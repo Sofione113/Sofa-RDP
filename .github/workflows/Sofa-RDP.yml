@@ -11,33 +11,41 @@ jobs:
         run: |
           Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
           Expand-Archive ngrok.zip -DestinationPath .
-          .\ngrok.exe authtoken YOUR_AUTH_TOKEN
+          .\ngrok.exe authtoken 2JIoGH8xAdrjVB3cttrd9htOeBE_4KMCzwtLjwGAbZ8CHMCC8
 
-      - name: Enable RDP
+      - name: Enable RDP and Create User
         run: |
-          net user kamel123 MyStrong123 /add
-          net localgroup administrators kamel123 /add
+          net user sofiane123 SofianeRDP2025 /add
+          net localgroup administrators sofiane123 /add
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections' -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-     - name: Start ngrok Tunnel (foreground)
-  shell: pwsh
-  run: |
-    Start-Process -FilePath .\ngrok.exe -ArgumentList "tcp 3389" -NoNewWindow
-    Start-Sleep -Seconds 25
+      - name: Start ngrok Tunnel
+        shell: pwsh
+        run: |
+          Start-Process -FilePath .\ngrok.exe -ArgumentList "tcp 3389" -NoNewWindow
+          Start-Sleep -Seconds 25
 
       - name: Show RDP Connection Info
+        shell: pwsh
         run: |
           $attempts = 0
           do {
             try {
               $tunnel = Invoke-RestMethod http://127.0.0.1:4040/api/tunnels
               $rdp = $tunnel.tunnels[0].public_url
-              echo "✅ RDP جاهز:"
-              echo "🌐 $rdp"
+              Write-Host "`n✅ RDP جاهز للاستخدام!"
+              Write-Host "🔌 الاتصال: $rdp"
+              Write-Host "👤 اسم المستخدم: sofiane123"
+              Write-Host "🔑 كلمة المرور: SofianeRDP2025"
               break
             } catch {
               Start-Sleep -Seconds 5
               $attempts++
             }
-          } while ($attempts -lt 5)
+          } while ($attempts -lt 10)
+
+      - name: إبقاء الجلسة فعالة لـ 6 ساعات
+        shell: pwsh
+        run: |
+          Start-Sleep -Seconds 21600
