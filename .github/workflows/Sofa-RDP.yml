@@ -7,43 +7,36 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: إعداد ngrok
+      - name: Download and Setup ngrok
         run: |
           Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
           Expand-Archive ngrok.zip -DestinationPath .
           .\ngrok.exe authtoken YOUR_AUTH_TOKEN
 
-      - name: تفعيل RDP + المستخدم
+      - name: Enable RDP
         run: |
-          net user sofiane123 SofianeRDP2025 /add
-          net localgroup administrators sofiane123 /add
+          net user kamel123 MyStrong123 /add
+          net localgroup administrators kamel123 /add
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections' -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-      - name: تشغيل ngrok
+      - name: Start ngrok Tunnel in Background
         run: |
           Start-Job { .\ngrok.exe tcp 3389 }
           Start-Sleep -Seconds 20
 
-      - name: عرض بيانات الاتصال
+      - name: Show RDP Connection Info
         run: |
-          $try = 0
+          $attempts = 0
           do {
             try {
               $tunnel = Invoke-RestMethod http://127.0.0.1:4040/api/tunnels
-              $url = $tunnel.tunnels[0].public_url
-              Write-Host "`n✅ RDP جاهز!"
-              Write-Host "🔌 الاتصال: $url"
-              Write-Host "👤 اسم المستخدم: sofiane123"
-              Write-Host "🔑 كلمة المرور: SofianeRDP2025"
+              $rdp = $tunnel.tunnels[0].public_url
+              echo "✅ RDP جاهز:"
+              echo "🌐 $rdp"
               break
             } catch {
               Start-Sleep -Seconds 5
-              $try++
+              $attempts++
             }
-          } while ($try -lt 10)
-
-      - name: إبقاء الجلسة تعمل لمدة 6 ساعات
-        shell: pwsh
-        run: |
-          Start-Sleep -Seconds 21600
+          } while ($attempts -lt 5)
