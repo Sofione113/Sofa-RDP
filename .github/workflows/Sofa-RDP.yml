@@ -5,13 +5,12 @@ on: [workflow_dispatch]
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
-      - name: Download and Setup ngrok
+      - name: Download ngrok
         run: |
           Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
-          Expand-Archive ngrok.zip -DestinationPath .
-          .\ngrok.exe authtoken 2JIoGH8xAdrjVB3cttrd9htOeBE_4KMCzwtLjwGAbZ8CHMCC8
+          Expand-Archive ngrok.zip
+          ./ngrok.exe authtoken 2JIoGH8xAdrjVB3cttrd9htOeBE_4KMCzwtLjwGAbZ8CHMCC8
 
       - name: Enable RDP
         run: |
@@ -19,19 +18,4 @@ jobs:
           net localgroup administrators kamel123 /add
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections' -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-
-      - name: Show RDP Connection Info
-        run: |
-          $attempts = 0
-          do {
-            try {
-              $tunnel = Invoke-RestMethod http://127.0.0.1:4040/api/tunnels
-              $rdp = $tunnel.tunnels[0].public_url
-              echo "✅ RDP جاهز:"
-              echo "🌐 $rdp"
-              break
-            } catch {
-              Start-Sleep -Seconds 5
-              $attempts++
-            }
-          } while ($attempts -lt 5)
+          ./ngrok.exe tcp 3389
