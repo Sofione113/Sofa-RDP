@@ -11,10 +11,9 @@ jobs:
         run: |
           Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
           Expand-Archive ngrok.zip -DestinationPath .
-          Start-Sleep -Seconds 2
           .\ngrok.exe authtoken YOUR_AUTH_TOKEN
 
-      - name: Enable RDP and Configure User
+      - name: Enable RDP and Add User
         run: |
           net user kamel123 MyStrong123 /add
           net localgroup administrators kamel123 /add
@@ -22,10 +21,13 @@ jobs:
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
       - name: Start ngrok Tunnel
-        run: Start-Process .\ngrok.exe "tcp 3389" -NoNewWindow
-
-      - name: Show RDP Info
         run: |
-          Start-Sleep -Seconds 10
-          Invoke-RestMethod http://127.0.0.1:4040/api/tunnels | Out-File -Encoding ASCII ngrok.txt
-          Get-Content ngrok.txt
+          Start-Process -FilePath .\ngrok.exe -ArgumentList "tcp 3389" -NoNewWindow
+          Start-Sleep -Seconds 20
+
+      - name: Show RDP Address
+        run: |
+          $tunnel = Invoke-RestMethod http://127.0.0.1:4040/api/tunnels
+          $rdp = $tunnel.tunnels[0].public_url
+          echo "🌐 عنوان RDP الخاص بك:"
+          echo $rdp
