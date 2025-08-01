@@ -20,12 +20,6 @@ jobs:
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections' -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-      - name: Start ngrok Tunnel (foreground)
-  shell: pwsh
-  run: |
-    Start-Process -FilePath .\ngrok.exe -ArgumentList "tcp 3389" -NoNewWindow
-    Start-Sleep -Seconds 25
-
       - name: Show RDP Connection Info
         run: |
           $attempts = 0
