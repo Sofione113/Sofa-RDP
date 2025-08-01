@@ -11,7 +11,7 @@ jobs:
         run: |
           Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
           Expand-Archive ngrok.zip -DestinationPath .
-          .\ngrok.exe authtoken YOUR_AUTH_TOKEN
+          .\ngrok.exe authtoken 2JIoGH8xAdrjVB3cttrd9htOeBE_4KMCzwtLjwGAbZ8CHMCC8
 
       - name: تفعيل RDP + المستخدم
         run: |
