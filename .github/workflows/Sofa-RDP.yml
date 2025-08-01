@@ -13,21 +13,30 @@ jobs:
           Expand-Archive ngrok.zip -DestinationPath .
           .\ngrok.exe authtoken YOUR_AUTH_TOKEN
 
-      - name: Enable RDP and Add User
+      - name: Enable RDP
         run: |
           net user kamel123 MyStrong123 /add
           net localgroup administrators kamel123 /add
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections' -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-      - name: Start ngrok Tunnel
+      - name: Start ngrok Tunnel in Background
         run: |
-          Start-Process -FilePath .\ngrok.exe -ArgumentList "tcp 3389" -NoNewWindow
+          Start-Job { .\ngrok.exe tcp 3389 }
           Start-Sleep -Seconds 20
 
-      - name: Show RDP Address
+      - name: Show RDP Connection Info
         run: |
-          $tunnel = Invoke-RestMethod http://127.0.0.1:4040/api/tunnels
-          $rdp = $tunnel.tunnels[0].public_url
-          echo "🌐 عنوان RDP الخاص بك:"
-          echo $rdp
+          $attempts = 0
+          do {
+            try {
+              $tunnel = Invoke-RestMethod http://127.0.0.1:4040/api/tunnels
+              $rdp = $tunnel.tunnels[0].public_url
+              echo "✅ RDP جاهز:"
+              echo "🌐 $rdp"
+              break
+            } catch {
+              Start-Sleep -Seconds 5
+              $attempts++
+            }
+          } while ($attempts -lt 5)
